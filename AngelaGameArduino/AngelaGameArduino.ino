@@ -1,197 +1,99 @@
-
-// Include Libraries
-#include "Arduino.h"
-#include "LiquidCrystal.h"
-#include "Button.h"
-
-
-// Pin Definitions
-#define LCD_PIN_RS  7
-#define LCD_PIN_E 6
-#define LCD_PIN_DB4 2
-#define LCD_PIN_DB5 3
-#define LCD_PIN_DB6 4
-#define LCD_PIN_DB7 5
-#define PUSHBUTTON_1_PIN_2  8
-#define PUSHBUTTON_2_PIN_2  9
-#define PUSHBUTTON_3_PIN_2  10
-#define PUSHBUTTON_4_PIN_2  11
-#define PUSHBUTTON_5_PIN_2  12
-#define PUSHBUTTON_6_PIN_2  13
+int initialNumber = 0;
+int turn = 0;
+int numberTurn[100];
+int reachNumber = 0;
 
 
-
-// Global variables and defines
-
-// object initialization
-LiquidCrystal lcd(LCD_PIN_RS,LCD_PIN_E,LCD_PIN_DB4,LCD_PIN_DB5,LCD_PIN_DB6,LCD_PIN_DB7);
-Button pushButton_1(PUSHBUTTON_1_PIN_2);
-Button pushButton_2(PUSHBUTTON_2_PIN_2);
-Button pushButton_3(PUSHBUTTON_3_PIN_2);
-Button pushButton_4(PUSHBUTTON_4_PIN_2);
-Button pushButton_5(PUSHBUTTON_5_PIN_2);
-Button pushButton_6(PUSHBUTTON_6_PIN_2);
-
-
-
-// define vars for testing menu
-const int timeout = 10000;       //define timeout of 10 sec
-char menuOption = 0;
-long time0;
-
-// Setup the essentials for your circuit to work. It runs first every time your circuit is powered with electricity.
-void setup() 
-{
-    // Setup Serial which is useful for debugging
-    // Use the Serial Monitor to view printed messages
-    Serial.begin(9600);
-    while (!Serial) ; // wait for serial port to connect. Needed for native USB
-    Serial.println("start");
-    
-    // set up the LCD's number of columns and rows
-     lcd.begin(16, 2);
-    pushButton_1.init();
-    pushButton_2.init();
-    pushButton_3.init();
-    pushButton_4.init();
-    pushButton_5.init();
-    pushButton_6.init();
-    menuOption = menu();
-    
+void setup()
+{  
+  Serial.begin(9600);
+  Serial.println("***benvenuto in Angela Game***");
+  partenza();
 }
 
-// Main logic of your circuit. It defines the interaction between the components you selected. After setup, it runs over and over again, in an eternal loop.
 void loop() 
 {
-    
-    
-    if(menuOption == '1') {
-    // LCD 16x2 - Test Code
-    // Print a message to the LCD.
-    lcd.setCursor(0, 0);
-    lcd.print("Circuito Rocks !");
-    // Turn off the display:
-    lcd.noDisplay();
-    delay(500);
-    // Turn on the display:
-    lcd.display();
-    delay(500);
-    }
-    else if(menuOption == '2') {
-    // Mini Pushbutton Switch #1 - Test Code
-    //Read pushbutton state. 
-    //if button is pressed function will return HIGH (1). if not function will return LOW (0). 
-    //for debounce funtionality try also pushButton_1.onPress(), .onRelease() and .onChange().
-    //if debounce is not working properly try changing 'debounceDelay' variable in Button.h
-    bool pushButton_1Val = pushButton_1.read();
-    Serial.print(F("Val: ")); Serial.println(pushButton_1Val);
-
-    }
-    else if(menuOption == '3') {
-    // Mini Pushbutton Switch #2 - Test Code
-    //Read pushbutton state. 
-    //if button is pressed function will return HIGH (1). if not function will return LOW (0). 
-    //for debounce funtionality try also pushButton_2.onPress(), .onRelease() and .onChange().
-    //if debounce is not working properly try changing 'debounceDelay' variable in Button.h
-    bool pushButton_2Val = pushButton_2.read();
-    Serial.print(F("Val: ")); Serial.println(pushButton_2Val);
-
-    }
-    else if(menuOption == '4') {
-    // Mini Pushbutton Switch #3 - Test Code
-    //Read pushbutton state. 
-    //if button is pressed function will return HIGH (1). if not function will return LOW (0). 
-    //for debounce funtionality try also pushButton_3.onPress(), .onRelease() and .onChange().
-    //if debounce is not working properly try changing 'debounceDelay' variable in Button.h
-    bool pushButton_3Val = pushButton_3.read();
-    Serial.print(F("Val: ")); Serial.println(pushButton_3Val);
-
-    }
-    else if(menuOption == '5') {
-    // Mini Pushbutton Switch #4 - Test Code
-    //Read pushbutton state. 
-    //if button is pressed function will return HIGH (1). if not function will return LOW (0). 
-    //for debounce funtionality try also pushButton_4.onPress(), .onRelease() and .onChange().
-    //if debounce is not working properly try changing 'debounceDelay' variable in Button.h
-    bool pushButton_4Val = pushButton_4.read();
-    Serial.print(F("Val: ")); Serial.println(pushButton_4Val);
-
-    }
-    else if(menuOption == '6') {
-    // Mini Pushbutton Switch #5 - Test Code
-    //Read pushbutton state. 
-    //if button is pressed function will return HIGH (1). if not function will return LOW (0). 
-    //for debounce funtionality try also pushButton_5.onPress(), .onRelease() and .onChange().
-    //if debounce is not working properly try changing 'debounceDelay' variable in Button.h
-    bool pushButton_5Val = pushButton_5.read();
-    Serial.print(F("Val: ")); Serial.println(pushButton_5Val);
-
-    }
-    else if(menuOption == '7') {
-    // Mini Pushbutton Switch #6 - Test Code
-    //Read pushbutton state. 
-    //if button is pressed function will return HIGH (1). if not function will return LOW (0). 
-    //for debounce funtionality try also pushButton_6.onPress(), .onRelease() and .onChange().
-    //if debounce is not working properly try changing 'debounceDelay' variable in Button.h
-    bool pushButton_6Val = pushButton_6.read();
-    Serial.print(F("Val: ")); Serial.println(pushButton_6Val);
-
-    }
-    
-    
-    
-    if (millis() - time0 > timeout)
-    {
-        menuOption = menu();
-    }
-    
+  int controlWL = winOrLoseControl(initialNumber);
+  switch(controlWL)
+  {
+    case 1:    
+            turnoDiChi();
+            addNumberSerial();
+            turn++;break;
+    case 0:
+            turn--;turnoDiChi();    
+            Serial.println(" ha vinto");
+            attendiInput();
+            partenza();break;
+    case 2:
+            turn--;turnoDiChi();
+            Serial.println("ha perso");
+            attendiInput();
+            partenza();break;
+            
+    default:break;           
+  }
 }
 
-
-
-// Menu function for selecting the components to be tested
-// Follow serial monitor for instrcutions
-char menu()
+void addNumberSerial()
 {
-
-    Serial.println(F("\nWhich component would you like to test?"));
-    Serial.println(F("(1) LCD 16x2"));
-    Serial.println(F("(2) Mini Pushbutton Switch #1"));
-    Serial.println(F("(3) Mini Pushbutton Switch #2"));
-    Serial.println(F("(4) Mini Pushbutton Switch #3"));
-    Serial.println(F("(5) Mini Pushbutton Switch #4"));
-    Serial.println(F("(6) Mini Pushbutton Switch #5"));
-    Serial.println(F("(7) Mini Pushbutton Switch #6"));
-    Serial.println(F("(menu) send anything else or press on board reset button\n"));
-    while (!Serial.available());
-
-    // Read data from serial monitor if received
-    while (Serial.available()) 
+  bool finish = false;
+  while(!finish)
+  {
+    attendiInput();
+    int numero = Serial.parseInt();
+    Serial.read();
+    if(numberControl(numero))
     {
-        char c = Serial.read();
-        if (isAlphaNumeric(c)) 
-        {
-            if(c == '1') 
-          Serial.println(F("Now Testing LCD 16x2"));
-        else if(c == '2') 
-          Serial.println(F("Now Testing Mini Pushbutton Switch #1"));
-        else if(c == '3') 
-          Serial.println(F("Now Testing Mini Pushbutton Switch #2"));
-        else if(c == '4') 
-          Serial.println(F("Now Testing Mini Pushbutton Switch #3"));
-        else if(c == '5') 
-          Serial.println(F("Now Testing Mini Pushbutton Switch #4"));
-        else if(c == '6') 
-          Serial.println(F("Now Testing Mini Pushbutton Switch #5"));
-        else if(c == '7') 
-          Serial.println(F("Now Testing Mini Pushbutton Switch #6"));
-            else
-            {
-                Serial.println(F("illegal input!"));
-                return 0;
-            }
-            time0 = millis();
-            return c;
-        }
+      finish = true;
+      initialNumber += numero;
+      numberTurn[turn] = numero;
+      Serial.println((String)numero + " | " + (String)initialNumber);
     }
+    else
+    {
+      Serial.print("numero non accettato ->");
+    }
+  }
+}
+
+bool numberControl(int number)
+{
+  if((numberTurn[turn-1] + number) != 7 && number < 7 && number > 0 || turn == 0 && number == 0){return true;}  
+  return false;
+}
+
+int winOrLoseControl(int number)
+{
+  if(number == reachNumber){return 0;}
+  if(number < reachNumber){return 1;}
+  if(number > reachNumber){return 2;}
+}
+
+void turnoDiChi()
+{
+  if(turn%2){Serial.print("Giocatore2 -> ");}
+  else{Serial.print("Giocatore1 -> ");}
+}
+
+void attendiInput()
+{
+  Serial.read();
+  while(!Serial.available()){}
+}
+
+void partenza()
+{
+  Serial.println("inserisci numero da raggiungere : ");
+  reachNumber = 0;
+  while(reachNumber > 100 || reachNumber < 29)
+  {
+      attendiInput();
+      reachNumber = Serial.parseInt();
+      Serial.read();
+      if(reachNumber > 100 ||  reachNumber < 29){ Serial.println(" il numero deve essere compreso tra 30 e 99"); }
+  }
+  Serial.println("numero da raggiungere -> " + (String)reachNumber);
+  initialNumber = 0;
+  turn = 0;
 }
